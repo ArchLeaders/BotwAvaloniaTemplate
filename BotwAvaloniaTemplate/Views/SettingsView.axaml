@@ -37,7 +37,8 @@
 			</Grid>
 		</Grid>
 		
-		<Grid Background="#26000000" Grid.Column="1">
+		<Grid Background="#26000000" Grid.Column="1"
+			  Name="FocusDelegate2">
 			<ScrollViewer>
 				<Grid>
 					<ContentControl Content="{Binding ActiveElement}"
