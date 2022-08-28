@@ -85,7 +85,7 @@ namespace BotwAvaloniaTemplate.Dialogs
 
             var tcs = new TaskCompletionSource<MessageBoxResult>();
             msgbox.Closed += delegate { tcs.TrySetResult(res); };
-            msgbox.ShowDialog(App.View);
+            msgbox.ShowDialog(View);
 
             return tcs.Task;
         }
