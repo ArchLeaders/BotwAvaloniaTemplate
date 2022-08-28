@@ -5,15 +5,13 @@ namespace BotwAvaloniaTemplate.Extensions
     public static class BrushExt
     {
         public static Brush ToBrush(this string color) => (Brush)(new BrushConverter().ConvertFromString(color) ?? new());
-        public static Brush? GetBrush(this string brush)
+        public static Brush? ToBrush(this bool? value)
         {
-            if (Avalonia.Application.Current != null) {
-                Avalonia.Application.Current.Resources.TryGetResource(brush, out object? obj);
-                return obj as Brush;
-            }
-            else {
-                return null;
-            }
+            return value switch {
+                true => "#00CC1C".ToBrush(),
+                false => "#FF0000".ToBrush(),
+                _ => "#00000000".ToBrush(),
+            };
         }
     }
 }
