@@ -15,6 +15,7 @@ namespace BotwAvaloniaTemplate
     public partial class App : Application
     {
         public static AppView View { get; private set; } = null!;
+        public static AppViewModel ViewModel { get; private set; } = null!;
         public static FluentTheme Theme { get; set; } = new(new Uri("avares://BotwActorTool.GUI/Styles"));
 
         public override void Initialize() => AvaloniaXamlLoader.Load(this);
@@ -32,16 +33,16 @@ namespace BotwAvaloniaTemplate
                 desktop.MainWindow = View;
 
                 // Create data context
-                AppViewModel dataContext = new();
-                View.DataContext = dataContext;
+                ViewModel = new();
+                View.DataContext = ViewModel;
 
                 // Make sure settings are always set
-                if (Config.IsNull) {
+                if (Config.RequiresInput) {
                     ((AppViewModel)View.DataContext).SettingsView = new(canClose: false);
                     ((AppViewModel)View.DataContext).SetStatus("Waiting for settings input", MaterialIconKind.BoxVariant);
 
                     await Task.Run(() => {
-                        while (Config.IsNull)
+                        while (Config.RequiresInput)
                             Task.Delay(100);
                     });
 
