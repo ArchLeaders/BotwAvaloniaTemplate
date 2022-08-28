@@ -19,10 +19,9 @@ namespace BotwAvaloniaTemplate.Models
         public static Settings Config { get; set; } = new();
 
         // 
-        // App-only
+        // App settings
 
-        [JsonIgnore]
-        public bool IsNull = true;
+        public bool RequiresInput { get; set;} = true;
 
         [JsonIgnore]
         public string DataFolder
@@ -67,6 +66,9 @@ namespace BotwAvaloniaTemplate.Models
                 Dlc = settings["dlc_dir"].ToString() ?? "";
                 BaseGameNx = settings["game_dir_nx"].ToString() ?? "";
                 DlcNx = settings["dlc_dir_nx"].ToString() ?? "";
+
+                // Optionally allow input to be no longer required
+                RequiresInput = false;
             }
 
             Save();
@@ -75,7 +77,7 @@ namespace BotwAvaloniaTemplate.Models
         public void Save()
         {
             Directory.CreateDirectory(Config.DataFolder);
-            File.WriteAllText($"{Config.DataFolder}\\{nameof(Config)}.json", JsonSerializer.Serialize(this));
+            File.WriteAllText($"{Config.DataFolder}\\{nameof(Config)}.json", JsonSerializer.Serialize(this, new JsonSerializerOptions() { WriteIndented = true }));
         }
 
         //
@@ -83,7 +85,10 @@ namespace BotwAvaloniaTemplate.Models
 
         public bool? Validate(string? path, string name)
         {
-            if (path == null || File.Exists(path))
+            if (string.IsNullOrEmpty(path))
+                return null;
+
+            if (File.Exists(path))
                 return false;
 
             return name switch {
@@ -99,7 +104,7 @@ namespace BotwAvaloniaTemplate.Models
 
         public bool? ValidateTheme(string value, string _2)
         {
-            App.Theme.Mode = Config.Theme == value ? FluentThemeMode.Dark : FluentThemeMode.Light;
+            App.Theme.Mode = value == "Dark" ? FluentThemeMode.Dark : FluentThemeMode.Light;
             App.Current!.Styles[0] = App.Theme;
             return null;
         }
@@ -110,8 +115,44 @@ namespace BotwAvaloniaTemplate.Models
         public async Task<string?> Setter(string title, string name)
         {
             return name switch {
-                _ => await BrowserDialogType.Folder.BrowseDialog(title),
+                _ => await BrowserDialog.Folder.BrowseDialog(title),
             };
+        }
+
+        //
+        // Custom save validation logc
+
+        public KeyValuePair<bool, string> ValidateSave(Dictionary<string, bool?> values)
+        {
+            if (values["BaseGame"] == false) {
+                return new(false, "The WiiU game path is invalid.\nPlease correct or delete it before saving.");
+            }
+
+            if (values["Update"] == false) {
+                return new(false, "The WiiU update path is invalid.\nPlease correct or delete it before saving.");
+            }
+
+            if (values["Dlc"] == false) {
+                return new(false, "The WiiU DLC path is invalid.\nPlease correct or delete it before saving.");
+            }
+
+            if (values["BaseGameNx"] == false && values["BaseGame"] == false) {
+                return new(false, "The Switch game/update path is invalid.\nPlease correct or delete it before saving.");
+            }
+
+            if (values["DlcNx"] == false) {
+                return new(false, "The Switch DLC path is invalid.\nPlease correct or delete it before saving.");
+            }
+
+            if (values["BaseGame"] == null && values["Update"] == null && values["BaseGameNx"] == null) {
+                return new(false, "No game path has been set for Switch or WiiU.\nPlease set one of them before saving.");
+            }
+
+            if (values["BaseGame"] == true && values["Update"] == null) {
+                return new(false, "The WiiU update path has not been set.\nPlease set it before saving.");
+            }
+
+            return new(true, null!);
         }
     }
 }
