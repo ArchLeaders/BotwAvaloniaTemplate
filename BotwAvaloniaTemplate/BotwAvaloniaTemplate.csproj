@@ -10,7 +10,13 @@
   <ItemGroup>
     <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Remove="Assets\Credits.md" />
+    <AvaloniaResource Remove="Assets\Help.md" />
     <None Remove=".gitignore" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Credits.md" />
+    <EmbeddedResource Include="Assets\Help.md" />
   </ItemGroup>
   <ItemGroup>
     <!--This helps with theme dll-s trimming.
