@@ -5,6 +5,7 @@ using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using BotwAvaloniaTemplate.Attributes;
+using BotwAvaloniaTemplate.Dialogs;
 using BotwAvaloniaTemplate.Extensions;
 using BotwAvaloniaTemplate.ViewModels;
 using ReactiveUI;
@@ -12,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace BotwAvaloniaTemplate.Views
 {
@@ -34,6 +36,7 @@ namespace BotwAvaloniaTemplate.Views
 
     public partial class SettingsView : UserControl
     {
+        private readonly Dictionary<string, Control> Settings = new();
         private readonly Dictionary<string, StackPanel> Panels = new();
         private readonly Dictionary<string, StackPanel> Folders = new();
         private readonly List<string> Categories = new();
@@ -51,9 +54,12 @@ namespace BotwAvaloniaTemplate.Views
             // Old code :man_shrugging:
             (View.DataContext as AppViewModel)!.IsSettingsOpen = true;
 
-            // Allow the user to unselect anything
+            // Very much unnecessary, but not having this bothers me.
+            // Allows you to focus seemingly nothing.
             Grid focusDelegate = this.FindControl<Grid>("FocusDelegate")!;
             focusDelegate.PointerPressed += (_, _) => focusDelegate.Focus();
+            Grid focusDelegate2 = this.FindControl<Grid>("FocusDelegate2")!;
+            focusDelegate2.PointerPressed += (_, _) => focusDelegate.Focus();
 
             Root = this.FindControl<StackPanel>("Root")!;
 
@@ -69,14 +75,45 @@ namespace BotwAvaloniaTemplate.Views
             this.FindControl<Button>("Cancel").Click += CancelClick;
         }
 
-        public void SaveClick(object? sender, EventArgs e)
+        public async void SaveClick(object? sender, EventArgs e)
         {
-            // WIP
+            Dictionary<string, bool?> validator = new();
+            foreach ((var name, var value) in Settings) {
+                validator.Add(name, Config.Validate(GetElement(value)?.ToString(), name));
+            }
+
+            var check = Config.ValidateSave(validator);
+            if (!check.Key) {
+                await MessageBox.Show(check.Value, "Error");
+            }
+            else {
+                foreach ((var name, var value) in Settings) {
+                    Config.GetType().GetProperty(name)?.SetValue(Config, GetElement(value));
+                }
+            }
+
+            Config.RequiresInput = false;
+            Config.Save();
+            ViewModel.SettingsView = null;
+            ViewModel.SetStatus(isLoading: false);
         }
 
-        public void CancelClick(object? sender, EventArgs e)
+        public void CancelClick(object? sender, EventArgs e) => ViewModel.SettingsView = null;
+
+        public object? GetElement(Control control)
         {
-            ((AppViewModel)View.DataContext!).SettingsView = null;
+            if (control is TextBox textBox) {
+                return textBox.Text;
+            }
+            else if (control is ComboBox comboBox) {
+                return (comboBox.SelectedItem as ComboBoxItem)?.Content;
+            }
+            else if (control is ToggleSwitch toggle) {
+                return toggle.IsChecked;
+            }
+            else {
+                throw new NotImplementedException($"Type of '{control.GetType().Name}' not implemented yet.");
+            }
         }
 
         private void CreateElement(PropertyInfo property)
@@ -157,7 +194,7 @@ namespace BotwAvaloniaTemplate.Views
                 UiType.Dropdown =>
                     CreateDropdownElement(property.Name, property.GetValue(Config) as string, setting.Name ?? property.Name, setting.Description, setting.DropdownElements),
                 UiType.Toggle =>
-                    CreateToggleElement((bool)property.GetValue(Config)!, setting.Name ?? property.Name, setting.Description),
+                    CreateToggleElement(property.Name, (bool)property.GetValue(Config)!, setting.Name ?? property.Name, setting.Description),
                 _ => throw new NotImplementedException()
             };
 
@@ -167,7 +204,7 @@ namespace BotwAvaloniaTemplate.Views
         private Border CreateElement(string propertyName, object property, string? name, string? description)
         {
             if (property is bool boolean) {
-                return CreateToggleElement(boolean, name ?? propertyName, description);
+                return CreateToggleElement(propertyName, boolean, name ?? propertyName, description);
             }
             else {
                 return CreateTextElement(propertyName, property.ToString(), name ?? propertyName, description);
@@ -186,7 +223,21 @@ namespace BotwAvaloniaTemplate.Views
             element.Text = value;
             Grid.SetColumn(element, 3);
 
+            Button browse = new() {
+                Content = "...",
+                Height = 32,
+                Width = 32,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Top
+            };
+            browse.Click += async (s, e) => element.Text = await Config.Setter(name, propertyName) ?? element.Text;
+            Grid.SetColumn(browse, 4);
+
             grid.Children.Add(element);
+            grid.Children.Add(browse);
+            Settings.Add(propertyName, element);
             return root;
         }
 
@@ -215,12 +266,14 @@ namespace BotwAvaloniaTemplate.Views
             element.SelectionChanged += (s, e) => ((Border)grid.Children[0]).Background = Config.Validate((element.SelectedItem as ComboBoxItem)?.Content.ToString(), propertyName).ToBrush();
             element.SelectedIndex = index;
             Grid.SetColumn(element, 3);
+            Grid.SetColumnSpan(element, 2);
 
             grid.Children.Add(element);
+            Settings.Add(propertyName, element);
             return root;
         }
 
-        private Border CreateToggleElement(bool value, string name, string? description)
+        private Border CreateToggleElement(string propertyName, bool value, string name, string? description)
         {
             ToggleSwitch element = new() {
                 IsChecked = value,
@@ -230,11 +283,13 @@ namespace BotwAvaloniaTemplate.Views
                 OffContent = ""
             };
             Grid.SetColumn(element, 3);
+            Grid.SetColumnSpan(element, 2);
 
             Border root = CreateGridElement(name, description);
             Grid grid = ((Grid)root.Child);
 
             grid.Children.Add(element);
+            Settings.Add(propertyName, element);
             return root;
         }
 
@@ -265,7 +320,7 @@ namespace BotwAvaloniaTemplate.Views
             };
 
             Grid child = new() {
-                ColumnDefinitions = new("6,*,10,1.2*")
+                ColumnDefinitions = new("6,*,10,1.2*,37")
             };
 
             StackPanel texts = new();
