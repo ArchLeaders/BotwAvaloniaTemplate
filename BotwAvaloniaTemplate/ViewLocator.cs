@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using BotwAvaloniaTemplate.ViewModels;
+using ReactiveUI;
 using System;
 
 namespace BotwAvaloniaTemplate
@@ -22,7 +23,7 @@ namespace BotwAvaloniaTemplate
 
         public bool Match(object data)
         {
-            return data is ViewModelBase;
+            return data is ReactiveObject;
         }
     }
 }
