@@ -38,7 +38,7 @@ namespace BotwAvaloniaTemplate.Dialogs
             };
         }
 
-        public static Task<MessageBoxResult> Show(string text, string title = "Notice", MessageBoxButtons buttons = MessageBoxButtons.Ok, Window? parent = null, Formatting formatting = Formatting.None)
+        public static Task<MessageBoxResult> Show(string text, string title = "Notice", MessageBoxButtons buttons = MessageBoxButtons.Ok, Formatting formatting = Formatting.None)
         {
             MessageBox msgbox = new(title, text, formatting);
             var res = MessageBoxResult.Ok;
@@ -85,10 +85,7 @@ namespace BotwAvaloniaTemplate.Dialogs
 
             var tcs = new TaskCompletionSource<MessageBoxResult>();
             msgbox.Closed += delegate { tcs.TrySetResult(res); };
-
-            if (parent != null)
-                msgbox.ShowDialog(parent);
-            else msgbox.Show();
+            msgbox.ShowDialog(App.View);
 
             return tcs.Task;
         }
