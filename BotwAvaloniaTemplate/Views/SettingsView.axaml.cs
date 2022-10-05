@@ -52,7 +52,7 @@ namespace BotwAvaloniaTemplate.Views
             DataContext = new SettingsViewBinding(canClose);
 
             // Old code :man_shrugging:
-            (View.DataContext as AppViewModel)!.IsSettingsOpen = true;
+            ViewModel.IsSettingsOpen = true;
 
             // Very much unnecessary, but not having this bothers me.
             // Allows you to focus seemingly nothing.
@@ -63,9 +63,7 @@ namespace BotwAvaloniaTemplate.Views
 
             Root = this.FindControl<StackPanel>("Root")!;
 
-            var settings = from t in Config.GetType()!.GetProperties()
-                           where t.GetCustomAttributes<SettingAttribute>(false).Any()
-                           select t;
+            var settings = Config.GetType()!.GetProperties().Where(x => x.GetCustomAttributes<SettingAttribute>(false).Any());
 
             foreach (var prop in settings) {
                 CreateElement(prop);
@@ -112,7 +110,7 @@ namespace BotwAvaloniaTemplate.Views
                 return toggle.IsChecked;
             }
             else {
-                throw new NotImplementedException($"Type of '{control.GetType().Name}' not implemented yet.");
+                throw new NotImplementedException($"Parsing controls of type '{control.GetType().Name}' are not supported.");
             }
         }
 

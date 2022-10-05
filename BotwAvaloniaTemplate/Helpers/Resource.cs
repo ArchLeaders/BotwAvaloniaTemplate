@@ -50,6 +50,6 @@ namespace BotwAvaloniaTemplate.Helpers
         public dynamic? ParseJson() => JsonSerializer.Deserialize<dynamic>(Data);
         public T? ParseJson<T>() => JsonSerializer.Deserialize<T>(Data);
 
-        public static Resource Load(string name, string? root = null) => new(name, root ?? typeof(Meta).Namespace ?? "BotwAvaloniaTemplate");
+        public static Resource Load(string name, string? root = null) => new(name, root ?? typeof(Meta).Namespace ?? "$safeprojectname$");
     }
 }

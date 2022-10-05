@@ -4,9 +4,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="BotwAvaloniaTemplate.Views.AppView"
-        xmlns:app="BotwAvaloniaTemplate.Views"
+        xmlns:app="using:BotwAvaloniaTemplate"
+        xmlns:views="using:BotwAvaloniaTemplate.Views"
 		xmlns:mdix="using:Material.Icons.Avalonia"
-        Title="Botw Avalonia Template"
+        Title="{x:Static app:Meta.Name}"
         Width="700"
         Height="450"
         MinWidth="700"
@@ -16,13 +17,7 @@
 		ExtendClientAreaChromeHints="NoChrome"
         Icon="/Assets/icon.ico">
 
-	<Grid>
-
-		<Grid.RowDefinitions>
-			<RowDefinition Height="30" />
-			<RowDefinition />
-			<RowDefinition Height="25" />
-		</Grid.RowDefinitions>
+	<Grid RowDefinitions="30,*,25">
 
 		<!--  CONTENT  -->
 
@@ -225,20 +220,22 @@
 						 MinHeight="2"
 						 Height="2"
 						 Background="{DynamicResource SystemBaseLowColor}"
-						 IsIndeterminate="{Binding IsLoading}">
-				<ProgressBar.Transitions>
-
-				</ProgressBar.Transitions>
-			</ProgressBar>
+						 IsIndeterminate="{Binding IsLoading}" />
 
 			<mdix:MaterialIcon Kind="{Binding StatusIcon}"
 							   HorizontalAlignment="Left"
 							   Width="16"
 							   Margin="4,2,0,0" />
 
+			<TextBlock Text="{x:Static app:Meta.Footer}"
+					   VerticalAlignment="Center"
+					   FontSize="10"
+					   HorizontalAlignment="Right"
+					   Margin="0,0,8,0" />
+
 			<Border Width="8"
 					Margin="26,3,0,0"
-					Height="2"
+					Height="1"
 					VerticalAlignment="Center"
 					Background="{DynamicResource SystemBaseHighColor}"
 					HorizontalAlignment="Left" />

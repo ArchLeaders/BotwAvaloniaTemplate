@@ -30,7 +30,7 @@ namespace BotwAvaloniaTemplate.Models
         //
         // Settings
 
-        [Setting("Base Game Directory", "The folder containing the base game files for BOTW, without the update ir DLC files. The last folder should be \"content\", e.g. \"C:\\Games\\Botw\\BaseGame\\content\"")]
+        [Setting("Base Game Directory", "The folder containing the base game files for BOTW, without the update dir DLC files. The last folder should be \"content\", e.g. \"C:\\Games\\Botw\\BaseGame\\content\"")]
         public string BaseGame { get; set; } = "";
 
         [Setting("Update Directory", "The folder containing the update files for BOTW, version 1.5.0. The last folder should be \"content\", e.g. \"C:\\Games\\Botw\\Update\\content\"")]
