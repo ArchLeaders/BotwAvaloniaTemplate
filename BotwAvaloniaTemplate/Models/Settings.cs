@@ -1,6 +1,6 @@
 ﻿global using static BotwAvaloniaTemplate.Models.Settings;
+using Avalonia.SettingsFactory.Core;
 using Avalonia.Themes.Fluent;
-using BotwAvaloniaTemplate.Attributes;
 using BotwAvaloniaTemplate.Extensions;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +12,7 @@ using static System.Environment;
 
 namespace BotwAvaloniaTemplate.Models
 {
-    public class Settings
+    public class Settings : ISettingsBase
     {
         //
         // Static
@@ -45,7 +45,7 @@ namespace BotwAvaloniaTemplate.Models
         [Setting("Switch DLC Directory", "Path should end in '01007EF00011F001\\romfs'")]
         public string DlcNx { get; set; } = "";
 
-        [Setting(UiType.Dropdown, "Dark", "Light")]
+        [Setting(UiType.Dropdown, "Dark", "Light", Category = "Appearance")]
         public string Theme { get; set; } = "Dark";
 
         // 
@@ -74,10 +74,11 @@ namespace BotwAvaloniaTemplate.Models
             Save();
         }
 
-        public void Save()
+        public ISettingsBase Save()
         {
             Directory.CreateDirectory(Config.DataFolder);
             File.WriteAllText($"{Config.DataFolder}\\{nameof(Config)}.json", JsonSerializer.Serialize(this, new JsonSerializerOptions() { WriteIndented = true }));
+            return this;
         }
 
         //
