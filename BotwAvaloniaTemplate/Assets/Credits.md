@@ -1,1 +1,0 @@
-### Example Credits Prompt!
