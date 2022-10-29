@@ -115,7 +115,7 @@ namespace BotwAvaloniaTemplate.Models
         public async Task<string?> Setter(string title, string name)
         {
             return name switch {
-                _ => await BrowserDialog.Folder.BrowseDialog(title),
+                _ => await BrowserDialog.Folder.ShowDialog(title),
             };
         }
 
